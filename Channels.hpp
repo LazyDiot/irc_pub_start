@@ -35,10 +35,10 @@ class channel{
 		void enforce_password_restriction(user *sender, const std::string &pw);
 		void lift_user_limit(user *sender);
 		void enforce_user_limit(user *sender, ssize_t limit);
-		void kick_user(user *sender, user *reciever);
-		void promote_to_op(user *sender, user *reciever);
-		void demote(user *sender, user *reciever);
-		void invite_user(user *sender, user *reciever);
+		void kick_user(user *sender, std::string reciever);
+		void promote_to_op(user *sender, std::string reciever);
+		void demote(user *sender, std::string reciever);
+		void invite_user(user *sender, std::string reciever);
 
 		void kick(std::string &, user *);
 		void invite(std::string &, user *);

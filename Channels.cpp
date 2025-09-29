@@ -239,28 +239,34 @@ void channel::enforce_user_limit(user *sender, ssize_t limit)
 	return (sender->recieve_message("request denied. insufficent privileges\n"));
 }
 
-void channel::promote_to_op(user *sender, user *reciever)
+void channel::promote_to_op(user *sender, std::string reciever)
 {
 	if (!(sender->getAdmin()))
 		return (sender->recieve_message("request denied. insufficent privileges\n"));
+
+	user *test;
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
 	{
-		if (*it == reciever)
+		test = *it;
+		if (test->getUserName() == reciever)
 			return (sender->recieve_message("target user already is operator in said channel\n"));
 		it ++;
 	}
-	this->pv_chann_modos.push_back(reciever);
+	this->pv_chann_modos.push_back(*it);
 }
 
-void channel::demote(user *sender, user *reciever)
+void channel::demote(user *sender, std::string reciever)
 {
 	if (!(sender->getAdmin()))
 		return (sender->recieve_message("request denied. insufficent privileges\n"));
+
+	user *test;
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
 	{
-		if (*it == reciever)
+		test = *it;
+		if (test->getUserName() == reciever)
 		{
 			this->pv_chann_modos.erase(it);
 			return ;
@@ -270,10 +276,9 @@ void channel::demote(user *sender, user *reciever)
 	return (sender->recieve_message("target user is not an operator in said channel\n"));
 }
 
-void channel::invite_user(user *sender, user *reciever)
+void channel::invite_user(user *sender, std::string reciever)
 {
-	if (reciever->getAdmin())
-		return (sender->recieve_message("target is an administrator and cannot be kicked\n"));
+	user *test;
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	//pourquoi j'ai dû le foutre avant le goto alors que je l'utilise pas dedans, j'en sais rien
 	if (sender->getAdmin())
@@ -289,11 +294,12 @@ void channel::invite_user(user *sender, user *reciever)
 	std::vector<user *>::iterator ita = pv_whitelist.begin(), lasta = pv_whitelist.end();
 	while (ita != lasta)
 	{
-		if (*ita == reciever)
+		test = *ita;
+		if (test->getUserName() == reciever)
 			return (sender->recieve_message("user already has access privileges\n"));
 		ita ++;
 	}
-	this->pv_whitelist.push_back(reciever);
+	this->pv_whitelist.push_back(test);
 }
 
 //kick : 	admins can't be kicked;
@@ -302,18 +308,20 @@ void channel::invite_user(user *sender, user *reciever)
 //			si reciever n'est pas dans le chann, error;
 //			si reciever est opérator il faut le remove de la liste;
 //			dans tous les cas il faut le virer des users du chann
-void channel::kick_user(user *sender, user *reciever) //ajouter une std::string reason
+void channel::kick_user(user *sender, std::string reciever) //ajouter une std::string reason
 {
 	std::vector<user *>::iterator ituser = pv_users_in_chann.begin(), lastuser = pv_users_in_chann.end();
+	user *testuser, *testrec;
 	while (ituser != lastuser)
 	{
-		if (*ituser == reciever)
+		testuser = *ituser;
+		if (testuser->getUserName() == reciever)
 			break;
 		ituser ++;
 	}
 	if (ituser == lastuser)
 		return (sender->recieve_message("target user isn't present in this channel\n"));
-	if (reciever->getAdmin())
+	if (testuser->getAdmin())
 		return (sender->recieve_message("target is an administrator and cannot be kicked\n"));
 	std::vector<user *>::iterator itsend = pv_chann_modos.begin(), itrec = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (itsend != last)
@@ -326,7 +334,8 @@ void channel::kick_user(user *sender, user *reciever) //ajouter une std::string 
 	}
 	while (itrec != last)
 	{
-		if (*itrec == reciever)
+		testrec = *itrec;
+		if (testrec->getUserName() == reciever)
 			break ;
 		itrec ++;
 	}

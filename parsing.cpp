@@ -59,7 +59,7 @@ void channel::invite(std::string &s, user *send)
         std::cout << "Error executing command : \"INVITE\". Expected syntax : /INVITE <username>\n" << std::endl;
         return ;
     }
-    // channel::invite(this, reciever);
+    this->invite_user(send, reciever);
 }
 
 void channel::topic(std::string &s, user *send)
@@ -79,6 +79,7 @@ void channel::topic(std::string &s, user *send)
         return ;
     }
     subject = topic;
+    this->change_topic(send, subject);
 }
 
 ssize_t cpp_string_to_ssizet(std::string &s)
@@ -153,3 +154,6 @@ void channel::parse_string(std::string &s, user *send)
     void (channel::*execute_command[])(std::string &, user *) = {&channel::broadcast_message, &channel::kick, &channel::invite, &channel::topic, &channel::mode};
     (this->*execute_command[is_command(cmd)])(s, send);
 }
+
+// https://irssi.org/documentation/help/msg/
+// donc ce qui est au dessus est incomplet-> manque un send en privé
