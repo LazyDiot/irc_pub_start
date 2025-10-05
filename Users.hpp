@@ -23,6 +23,9 @@ class user{
 
         bool getAdmin() const;
         int getID() const;
+
+        void setNick(const std::string &);
+        void setUserName(const std::string &);
         std::string getNick() const;
         std::string getUserName() const;
 

@@ -26,11 +26,10 @@ int is_command(char *s)
 
 void channel::kick(std::string &s, user *send)
 {
-    char *change, split[s.size() + 1], *reciever;
-    strncpy(split, s.c_str(), s.size());
+    char *change, split[s.size()], *reciever;
+    strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
-    split[s.size() + 1] = '\0';//merci les atrocités que le c++ me force à commettre
+        return (send->recieve_message("Error processing your message. Please try again\n"));//merci les atrocités que le c++ me force à commettre
     std::string reason, rec;
 
     reciever = strtok(split, " ");
@@ -46,11 +45,10 @@ void channel::kick(std::string &s, user *send)
 
 void channel::invite(std::string &s, user *send)
 {
-    char *change, split[s.size() + 1], *reciever;
-    strncpy(split, s.c_str(), s.size());
+    char *change, split[s.size()], *reciever;
+    strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
-    split[s.size() + 1] = '\0';
 
     reciever = strtok(split, " ");
     reciever = strtok(NULL, " ");
@@ -64,11 +62,10 @@ void channel::invite(std::string &s, user *send)
 
 void channel::topic(std::string &s, user *send)
 {
-    char *topic, split[s.size() + 1];
-    strncpy(split, s.c_str(), s.size());
+    char *topic, split[s.size()];
+    strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
-    split[s.size() + 1] = '\0';
     std::string subject;
 
     topic = strtok(split, " ");
@@ -97,11 +94,10 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
 {
     //MODE ±i; ±t; ±k; ±o; ±l? ou juste la lettre et ca swap on/off?
     const char *split1 = s.c_str();
-    char *change, split[s.size() + 1], *add_on;
-    strncpy(split, s.c_str(), s.size());
+    char *change, split[s.size()], *add_on;
+    strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
-    split[s.size() + 1] = '\0';
     change = strtok(split, " ");//"MODE"
     change = strtok(NULL, " ");//faut check 11 possibilités donc ca va forcément être dégueu? pas de pointeur sur fn car args differents
     std::string mode = change, additional;
@@ -145,11 +141,10 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
 //useless ou pas? https://irssi.org/New-users/
 void channel::parse_string(std::string &s, user *send)
 {
-    char test[s.size() + 1];
-    strncpy(test, s.c_str(), s.size());
+    char test[s.size()];
+    strncpy(test, s.c_str(), s.size() + 1);
     if (!test)
         return (send->recieve_message("Error processing your message. Please try again\n"));
-    test[s.size() + 1] = '\0';
     char *cmd = strtok(test, " ");
     void (channel::*execute_command[])(std::string &, user *) = {&channel::broadcast_message, &channel::kick, &channel::invite, &channel::topic, &channel::mode};
     (this->*execute_command[is_command(cmd)])(s, send);

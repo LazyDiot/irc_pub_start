@@ -3,6 +3,8 @@
 channel::channel(std::string &name)
 {
     pv_name = name;
+	pv_password = "";
+	pv_topic = "";
 	pv_invite_only = false;
 	pv_topic_op_restricted = false;
 	pv_needs_password = false;

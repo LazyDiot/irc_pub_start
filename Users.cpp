@@ -2,6 +2,8 @@
 
 user::user(int id)
 {
+    pv_nick = "";
+    pv_username = "";
     pv_id = id;
     pv_isadmin = false;
 }
@@ -54,4 +56,14 @@ std::string user::getNick() const
 std::string user::getUserName() const
 {
     return (pv_username);
+}
+
+void user::setNick(const std::string &nick)
+{
+    this->pv_nick = nick;
+}
+
+void user::setUserName(const std::string &username)
+{
+    this->pv_username = username;
 }
