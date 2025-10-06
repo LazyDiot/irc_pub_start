@@ -1,6 +1,8 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+# define MAX_USERS_IN_CHAT 150
+
 # include <iostream>
 # include <vector>
 # include <sstream>

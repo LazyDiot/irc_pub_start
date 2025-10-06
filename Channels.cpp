@@ -75,23 +75,23 @@ void channel::change_topic(user *sender, std::string &tp)
 		while (it != last)
 		{
 			if (*it == sender)
-				break ;
+				goto topic_change ;
 			it ++;
 		}
 	}
-	if (it == last)
-		return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("request denied. insufficent privileges\n"));
 	topic_change:
 	this->pv_topic.clear();
 	this->pv_topic = tp;
+	broadcast_message("The new topic of this channel ( " + this->getName() + " ) is now " + tp + "\n");
 }
 
 void channel::lift_topic_restriction(user *sender)
 {
 	if (sender->getAdmin())
 	{
-		this->pv_topic_op_restricted = false; 
-		return ;
+		this->pv_topic_op_restricted = false;
+		return broadcast_message("The topic of this channel ( " + this->getName() + " ) can now be freely changed by everyone\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -99,7 +99,8 @@ void channel::lift_topic_restriction(user *sender)
 		if (*it == sender)
 		{
 			this->pv_topic_op_restricted = false;
-			return ;
+			return broadcast_message("The topic of this channel ( " + this->getName() + " ) can now be freely changed by everyone\n");
+
 		}
 		it ++;
 	}
@@ -111,7 +112,7 @@ void channel::enforce_topic_restriction(user *sender)
 	if (sender->getAdmin())
 	{
 		this->pv_topic_op_restricted = true;
-		return ;
+		return broadcast_message("The topic of this channel ( " + this->getName() + " ) can now only be changed by a moderator or an administrator\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -119,7 +120,7 @@ void channel::enforce_topic_restriction(user *sender)
 		if (*it == sender)
 		{
 			this->pv_topic_op_restricted = true;
-			return ;
+			return broadcast_message("The topic of this channel ( " + this->getName() + " ) can now only be changed by a moderator or an administrator\n");
 		}
 		it ++;
 	}
@@ -131,7 +132,7 @@ void channel::lift_invite_restriction(user *sender)
 	if (sender->getAdmin())
 	{
 		this->pv_invite_only = false; //faut clear la whitelist?
-		return ;
+		return broadcast_message("This channel ( " + this->getName() + " ) is not in invite-only mode anymore\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -139,7 +140,7 @@ void channel::lift_invite_restriction(user *sender)
 		if (*it == sender)
 		{
 			this->pv_invite_only = false;//faut clear la whitelist?
-			return ;
+			return broadcast_message("This channel ( " + this->getName() + " ) is not in invite-only mode anymore\n");
 		}
 		it ++;
 	}
@@ -151,7 +152,7 @@ void channel::enforce_invite_restriction(user *sender)
 	if (sender->getAdmin())
 	{
 		this->pv_invite_only = true; //il faut donc mettre tous les users actuels dans la whitelist? nan vu qu'ils ont déjà join et sont déjà la?
-		return ;
+		return broadcast_message("This channel ( " + this->getName() + " ) is now in invite-only mode\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -159,7 +160,7 @@ void channel::enforce_invite_restriction(user *sender)
 		if (*it == sender)
 		{
 			this->pv_invite_only = true;
-			return ;
+			return broadcast_message("This channel ( " + this->getName() + " ) is now in invite-only mode\n");
 		}
 		it ++;
 	}
@@ -172,7 +173,7 @@ void channel::lift_password_restriction(user *sender)
 	{
 		this->pv_needs_password = false;
 		this->pv_password = "";
-		return ;
+		return broadcast_message("This channel ( " + this->getName() + " ) doesn't require a password anymore\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -181,7 +182,7 @@ void channel::lift_password_restriction(user *sender)
 		{
 			this->pv_needs_password = false;
 			this->pv_password = "";
-			return ;
+			return broadcast_message("This channel ( " + this->getName() + " ) doesn't require a password anymore\n");
 		}
 		it ++;
 	}
@@ -196,7 +197,7 @@ void channel::enforce_password_restriction(user *sender, const std::string &pw)
 			return (sender->recieve_message("channel password can't be empty\n"));
 		this->pv_needs_password = true;
 		this->pv_password = pw;
-		return ;
+		return broadcast_message("This channel ( " + this->getName() + " ) does now require a password to enter\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -207,11 +208,20 @@ void channel::enforce_password_restriction(user *sender, const std::string &pw)
 				return (sender->recieve_message("channel password can't be empty\n"));
 			this->pv_needs_password = true;
 			this->pv_password = pw;
-			return ;
+			return broadcast_message("This channel ( " + this->getName() + " ) does now require a password to enter\n");
 		}
 		it ++;
 	}
 	return (sender->recieve_message("request denied. insufficent privileges\n"));
+}
+
+std::string cpp_ssizet_to_string(ssize_t num)
+{
+	std::string ret;
+	std::stringstream ss;
+	ss << num;
+	ss >> ret;
+	return ret;
 }
 
 void channel::lift_user_limit(user *sender)
@@ -219,7 +229,7 @@ void channel::lift_user_limit(user *sender)
 	if (sender->getAdmin())
 	{
 		this->pv_user_limit = -1;
-		return ;
+		return broadcast_message("This channel ( " + this->getName() + " ) has now a limit of " + cpp_ssizet_to_string(MAX_USERS_IN_CHAT) + "users\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
@@ -227,7 +237,7 @@ void channel::lift_user_limit(user *sender)
 		if (*it == sender)
 		{
 			this->pv_user_limit = -1;
-			return ;
+			return broadcast_message("This channel ( " + this->getName() + " ) has now a limit of " + cpp_ssizet_to_string(MAX_USERS_IN_CHAT) + "users\n");
 		}
 		it ++;
 	}
@@ -238,20 +248,20 @@ void channel::enforce_user_limit(user *sender, ssize_t limit)
 {
 	if (sender->getAdmin())
 	{
-		if (limit == 0 || limit == -1)
+		if (limit < 1)
 			return (sender->recieve_message("user limit must be greater than zero\n"));
 		this->pv_user_limit = limit;
-		return ;
+		return broadcast_message("This channel ( " + this->getName() + " ) has now a limit of " + cpp_ssizet_to_string(limit) + "users\n");
 	}
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (it != last)
 	{
 		if (*it == sender)
 		{
-			if (limit == 0 || limit == -1)
+			if (limit < 1)
 				return (sender->recieve_message("user limit must be greater than zero\n"));
 			this->pv_user_limit = limit;
-			return ;
+			return broadcast_message("This channel ( " + this->getName() + " ) has now a limit of " + cpp_ssizet_to_string(limit) + "users\n");
 		}
 		it ++;
 	}
@@ -273,6 +283,7 @@ void channel::promote_to_op(user *sender, std::string reciever)
 		it ++;
 	}
 	this->pv_chann_modos.push_back(*it);
+	test->recieve_message("You now are moderator in ( " + this->getName() + " ) channel.\n");
 }
 
 void channel::demote(user *sender, std::string reciever)
@@ -293,6 +304,7 @@ void channel::demote(user *sender, std::string reciever)
 		it ++;
 	}
 	return (sender->recieve_message("target user is not an operator in said channel\n"));
+	test->recieve_message("You were stripped from your moderator privileges in ( " + this->getName() + " ) channel.\n");
 }
 
 void channel::invite_user(user *sender, std::string reciever)
@@ -319,6 +331,7 @@ void channel::invite_user(user *sender, std::string reciever)
 		ita ++;
 	}
 	this->pv_whitelist.push_back(test);
+	test->recieve_message("You were invited to join ( " + this->getName() + " ) channel.\n");
 }
 
 //kick : 	admins can't be kicked;
@@ -363,14 +376,16 @@ void channel::kick_user(user *sender, std::string reciever) //ajouter une std::s
 		if (itrec != pv_chann_modos.end())
 			pv_chann_modos.erase(itrec);
 		pv_users_in_chann.erase(ituser);
-		return ;
+		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() /* + " because " + reason*/ + "\n");
+		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() /* + " because " + reason*/ + "\n"));
 	}
 	if (itsend != pv_chann_modos.end())
 	{
 		if (itrec != pv_chann_modos.end())
 			return (sender->recieve_message("you can't kick target user, he has same privileges than you\n"));
 		pv_users_in_chann.erase(ituser);
-		return ;
+		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() /* + " because " + reason*/ + "\n");
+		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() /* + " because " + reason*/));
 	}
 	return (sender->recieve_message("request denied. insufficent privileges\n"));
 }

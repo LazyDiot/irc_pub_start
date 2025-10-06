@@ -239,6 +239,6 @@ void channel::parse_string(std::string &s, user *send)
         return (send->recieve_message("Error processing your message. Please try again\n"));
     test[s.size()] = 0; //sécurité
     char *cmd = strtok(test, " ");
-    void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode};
+    void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode, &channel::join, &channel::leave};
     (this->*execute_command[is_command(cmd)])(s, send);
 }
