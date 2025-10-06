@@ -16,6 +16,8 @@ user::~user()
 void user::send_message(const std::string &msg, user &dest) 
 {
     dest.recieve_message(msg);
+    dest.set_sender(this);
+    this->last_reciever = &dest;
 }
 
 
@@ -66,4 +68,9 @@ void user::setNick(const std::string &nick)
 void user::setUserName(const std::string &username)
 {
     this->pv_username = username;
+}
+
+void user::set_sender(user *sender)
+{
+    this->last_sender = sender;
 }

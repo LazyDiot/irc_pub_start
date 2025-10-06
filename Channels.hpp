@@ -3,10 +3,12 @@
 
 # include <iostream>
 # include "Users.hpp"
+# include "Server.hpp"
 # include <vector>
 # include <sstream>
 
 class user;
+class server;
 
 class channel{
     	bool				pv_invite_only;
@@ -19,12 +21,17 @@ class channel{
 		std::vector<user *>	pv_users_in_chann;//ca ou un vector d'ints pour les ID? pointeur sur user semble plus simple tho
 		std::vector<user *> pv_whitelist;
 		std::vector<user *>	pv_chann_modos;
+		server				*serv;
 	public :
 		channel(std::string &name);
 		~channel();
+		
+		void close();
 
 		void broadcast_message(const std::string &msg);
 		void broadcast_message(std::string &msg, user *sender);
+		void warn_user(std::string &msg, user *sender);
+		void analyse_msg_content(std::string &msg, user *sender);
 
 		void change_topic(user *sender, std::string &tp);
 		void lift_topic_restriction(user *sender);
@@ -44,8 +51,13 @@ class channel{
 		void invite(std::string &, user *);
 		void topic(std::string &, user *);
 		void mode(std::string &, user *);
+		void join(std::string &, user *);
+		void leave(std::string &, user *);
 		void parse_string(std::string &, user *);
 
+		bool getInviteStatus() const;
+		bool getPasswordStatus() const;
+		std::string getPassword() const;
 		std::string getName() const;
 };
 

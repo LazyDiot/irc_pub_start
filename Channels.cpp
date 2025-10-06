@@ -18,6 +18,11 @@ channel::~channel()
     pv_whitelist.clear();
 }
 
+void channel::close()
+{
+	this->~channel();
+}
+
 void channel::broadcast_message(const std::string &msg) 
 {
     std::vector<user *>::iterator it = pv_users_in_chann.begin(), last = pv_users_in_chann.end();
@@ -47,6 +52,18 @@ void channel::broadcast_message(std::string &msg, user *sender)
     }
 }
 
+void channel::warn_user(std::string &msg, user *sender)
+{
+	sender->recieve_message("Unrecognized syntax : -> " + msg);
+}
+
+void channel::analyse_msg_content(std::string &msg, user *sender)
+{
+	// * pour le chann en cours;
+	// #channel pour un chann particulier
+	// , pour une réponse au dernier sender
+	// "name" pour un privé à quelqu'un
+}
 
 void channel::change_topic(user *sender, std::string &tp)
 {
@@ -356,6 +373,21 @@ void channel::kick_user(user *sender, std::string reciever) //ajouter une std::s
 		return ;
 	}
 	return (sender->recieve_message("request denied. insufficent privileges\n"));
+}
+
+bool channel::getInviteStatus() const
+{
+	return (pv_invite_only);
+}
+
+bool channel::getPasswordStatus() const
+{
+	return (pv_needs_password);
+}
+
+std::string channel::getPassword() const
+{
+	return (pv_password);
 }
 
 std::string channel::getName() const

@@ -11,6 +11,8 @@ class user{
         std::string                 pv_username;
         bool                        pv_isadmin;
         std::vector<std::string>    pv_msgqueue;
+        user                        *last_sender;
+        user                        *last_reciever;
         //nick et username à la construction, ou plus tard?
         //authenticate?
     public:
@@ -26,6 +28,7 @@ class user{
 
         void setNick(const std::string &);
         void setUserName(const std::string &);
+        void set_sender(user *);
         std::string getNick() const;
         std::string getUserName() const;
 
