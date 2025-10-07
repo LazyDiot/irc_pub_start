@@ -108,6 +108,8 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
     split[s.size()] = 0;
     change = strtok(split, " ");//"MODE"
     change = strtok(NULL, " ");//faut check 11 possibilités donc ca va forcément être dégueu? pas de pointeur sur fn car args differents
+    if (!change)
+        return (send->recieve_message("Error executing \"/MODE\" command. Expected syntax : /MODE <option> (one of the following : ±i; ±t; ±k; ±o; ±l?) <target/limit>.\n"));
     std::string mode = change, additional;
     if (mode == "-i")
         channel::lift_invite_restriction(send);
@@ -122,16 +124,22 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
     else if (mode == "+k")
     {
         add_on = strtok(NULL, " ");
+        if (!add_on)
+            return (send->recieve_message("Error executing \"/MODE\" password command. Expected syntax : /MODE +k <password>\n"));
         channel::enforce_password_restriction(send, additional = add_on);
     }
     else if (mode == "-o")
     {
         add_on = strtok(NULL, " ");
+        if (!add_on)
+            return (send->recieve_message("Error executing \"/MODE\" operator command. Expected syntax : /MODE -o <username>\n"));
         channel::demote(send, additional = add_on);
     }
     else if (mode == "+o")
     {
         add_on = strtok(NULL, " ");
+        if (!add_on)
+            return (send->recieve_message("Error executing \"/MODE\" operator command. Expected syntax : /MODE +o <username>\n"));
         channel::promote_to_op(send, additional = add_on);
     }
     else if (mode == "-l")
@@ -139,6 +147,8 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
     else if (mode == "+l")
     {
         add_on = strtok(NULL, " ");
+        if (!add_on)
+            return (send->recieve_message("Error executing \"/MODE\" user limit command. Expected syntax : /MODE +l <limit>\n"));
         channel::enforce_user_limit(send, cpp_string_to_ssizet(additional = add_on));
     }
     else 
