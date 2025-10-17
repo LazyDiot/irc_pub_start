@@ -24,13 +24,15 @@ int is_command(char *s)
         return (5);
     else if (cmd == "/LEAVE")
         return (6);
+    else if (cmd == "/NAMES")
+        return (7);
     else
         return (0); //assumes "/MSG ET tout autre input garbage"
 }
 
 void channel::kick(std::string &s, user *send)
 {
-    char *change, split[s.size()], *reciever;
+    char *change, split[s.size() + 1], *reciever;
     strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
@@ -50,7 +52,7 @@ void channel::kick(std::string &s, user *send)
 
 void channel::invite(std::string &s, user *send)
 {
-    char *change, split[s.size()], *reciever;
+    char *change, split[s.size() + 1], *reciever;
     strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
@@ -68,7 +70,7 @@ void channel::invite(std::string &s, user *send)
 
 void channel::topic(std::string &s, user *send)
 {
-    char *topic, split[s.size()];
+    char *topic, split[s.size() + 1];
     strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
@@ -101,7 +103,7 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
 {
     //MODE ±i; ±t; ±k; ±o; ±l? ou juste la lettre et ca swap on/off?
     const char *split1 = s.c_str();
-    char *change, split[s.size()], *add_on;
+    char *change, split[s.size() + 1], *add_on;
     strncpy(split, s.c_str(), s.size() + 1);
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
@@ -241,14 +243,39 @@ void channel::leave(std::string &chann, user *send)//comment je check si le user
     chan->broadcast_message(send->getNick() + " left " + this->getName());
 }
 
+void channel::display(std::string &s, user *send)
+{
+    // /NAMES
+    char test[s.size() + 1];
+    strncpy(test, s.c_str(), s.size() + 1);
+    if (!test)
+        return (send->recieve_message("Error processing your message. Please try again\n"));
+    test[s.size()] = 0; //sécurité
+    char *precision = strtok(test, " "), *chan_to_check;
+    channel *chdfdf = serv->getCorrectChannel((std::string &) "lobby");
+    precision = strtok(NULL, " ");
+    if (!(precision)) // i.e. juste tapé "/NAMES"
+    {
+        if (send->getlast_room() == "")
+            return (send->recieve_message("No active channel found.\n"));
+        return (send->recieve_message(this->show_users()));
+    }
+    else if (precision == "-count")
+        return (send->recieve_message(cpp_ssizet_to_string(count_users())));
+    else if (precision == "-ops")
+        return (send->recieve_message(show_mods()));
+    else
+        return (send->recieve_message("Unrecognized syntax " + (std::string)precision + " .\n"));
+}
+
 void channel::parse_string(std::string &s, user *send)
 {
-    char test[s.size()];
+    char test[s.size() + 1];
     strncpy(test, s.c_str(), s.size() + 1);
     if (!test)
         return (send->recieve_message("Error processing your message. Please try again\n"));
     test[s.size()] = 0; //sécurité
     char *cmd = strtok(test, " ");
-    void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode, &channel::join, &channel::leave};
+    void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode, &channel::join, &channel::leave, &channel::display};
     (this->*execute_command[is_command(cmd)])(s, send);
 }

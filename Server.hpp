@@ -22,6 +22,7 @@ class server {
     public : 
 
         channel *getCorrectChannel(std::string &);
+        
 };
 
 #endif

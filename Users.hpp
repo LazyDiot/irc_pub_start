@@ -4,6 +4,9 @@
 # include <iostream>
 # include <vector>
 # include <sstream>
+# include "Channels.hpp"
+
+class channel;
 
 class user{
         int                         pv_id;
@@ -11,8 +14,9 @@ class user{
         std::string                 pv_username;
         bool                        pv_isadmin;
         std::vector<std::string>    pv_msgqueue;
-        user                        *last_sender;
-        user                        *last_reciever;
+        std::string                 last_sender;
+        std::string                 last_reciever;
+        std::string                 last_room;
         //nick et username à la construction, ou plus tard?
         //authenticate?
     public:
@@ -31,6 +35,7 @@ class user{
         void set_sender(user *);
         std::string getNick() const;
         std::string getUserName() const;
+        std::string getlast_room() const;
 
 };
 

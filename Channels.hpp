@@ -53,7 +53,13 @@ class channel{
 		void mode(std::string &, user *);
 		void join(std::string &, user *);
 		void leave(std::string &, user *);
+		void display(std::string &, user *);
 		void parse_string(std::string &, user *);
+
+		std::string show_mods();
+		std::string show_users();
+		size_t count_users() const;
+		void display_active_chann_users(user *);
 
 		bool getInviteStatus() const;
 		bool getPasswordStatus() const;
@@ -61,4 +67,5 @@ class channel{
 		std::string getName() const;
 };
 
+std::string cpp_ssizet_to_string(ssize_t num);
 #endif

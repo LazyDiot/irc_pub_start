@@ -6,6 +6,9 @@ user::user(int id)
     pv_username = "";
     pv_id = id;
     pv_isadmin = false;
+    last_reciever = "";
+    last_sender = "";
+    last_room = "";
 }
 
 user::~user()
@@ -17,7 +20,7 @@ void user::send_message(const std::string &msg, user &dest)
 {
     dest.recieve_message(msg);
     dest.set_sender(this);
-    this->last_reciever = &dest;
+    this->last_reciever = dest.getNick();
 }
 
 
@@ -60,6 +63,11 @@ std::string user::getUserName() const
     return (pv_username);
 }
 
+std::string user::getlast_room() const
+{
+    return (this->last_room);
+}
+
 void user::setNick(const std::string &nick)
 {
     this->pv_nick = nick;
@@ -72,5 +80,5 @@ void user::setUserName(const std::string &username)
 
 void user::set_sender(user *sender)
 {
-    this->last_sender = sender;
+    this->last_sender = sender->getNick();
 }
