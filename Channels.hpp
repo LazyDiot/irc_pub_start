@@ -29,9 +29,9 @@ class channel{
 		void close();
 
 		void broadcast_message(const std::string &msg);
-		void broadcast_message(std::string &msg, user *sender);
+		void broadcast_message(std::string msg, user *sender);
 		void warn_user(std::string &msg, user *sender);
-		void analyse_msg_content(std::string &msg, user *sender);
+		void analyse_msg_content(std::string &msg, user *send);
 
 		void change_topic(user *sender, std::string &tp);
 		void lift_topic_restriction(user *sender);
@@ -58,6 +58,7 @@ class channel{
 
 		std::string show_mods();
 		std::string show_users();
+		void check_and_send(user *send);
 		size_t count_users() const;
 		void display_active_chann_users(user *);
 
@@ -68,4 +69,5 @@ class channel{
 };
 
 std::string cpp_ssizet_to_string(ssize_t num);
+ssize_t cpp_string_to_ssizet(std::string &s);
 #endif

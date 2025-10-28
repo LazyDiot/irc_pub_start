@@ -5,8 +5,10 @@
 # include <vector>
 # include <sstream>
 # include "Channels.hpp"
+# include "Server.hpp"
 
 class channel;
+class server;
 
 class user{
         int                         pv_id;
@@ -24,6 +26,8 @@ class user{
         ~user();
         
         void send_message(const std::string &msg, user &dest);
+        void check_rec(std::string , server *);
+        void check_send(std::string , server *);
         void recieve_message(const std::string &msg);//ouais c'est bien beau mais, je fais comment pour les afficher? un vieux while(1) dégueu?
         void empty_queue();
 
@@ -33,9 +37,13 @@ class user{
         void setNick(const std::string &);
         void setUserName(const std::string &);
         void set_sender(user *);
+        void set_reciever(user *);
+        void set_room(channel &);
         std::string getNick() const;
         std::string getUserName() const;
         std::string getlast_room() const;
+        std::string getlastrec() const;
+        std::string getlastsend() const;
 
 };
 

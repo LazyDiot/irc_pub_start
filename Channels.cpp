@@ -1,4 +1,8 @@
 #include "Channels.hpp"
+#include "Users.hpp"
+
+#include <iostream>
+#include <string.h>
 
 channel::channel(std::string &name)
 {
@@ -29,13 +33,13 @@ void channel::broadcast_message(const std::string &msg)
     while (it != last)
     {
 		user *test = *it;
-        test->recieve_message(msg);
+        test->recieve_message(msg); //mettre le sender du message via un getnick
         it ++;
         //pas besoin de refresh last, un message balancé avant que quelqu'un arrive ne devrait pas être reçu par ce quelqu'un
     }
 }
 
-void channel::broadcast_message(std::string &msg, user *sender)
+void channel::broadcast_message(std::string msg, user *sender)
 {
     std::vector<user *>::iterator it = pv_users_in_chann.begin(), last = pv_users_in_chann.end();
     while (it != last)
@@ -46,7 +50,7 @@ void channel::broadcast_message(std::string &msg, user *sender)
 			continue;
 		}
 		user *test = *it;
-        test->recieve_message(msg);
+        test->recieve_message(msg); //mettre le sender du message via un getnick
         it ++;
         //same
     }
@@ -57,12 +61,58 @@ void channel::warn_user(std::string &msg, user *sender)
 	sender->recieve_message("Unrecognized syntax : -> \"" + msg + "\".\n");
 }
 
-void channel::analyse_msg_content(std::string &msg, user *sender)//changer le last_room et les last_users
+void channel::analyse_msg_content(std::string &msg, user *send)//changer le last_room et les last_users /MSG
 {
-	// * pour le chann en cours;
-	// #channel pour un chann particulier
-	// , pour une réponse au dernier sender
-	// "name" pour un privé à quelqu'un
+	char split[msg.size() + 1], *target;
+    strncpy(split, msg.c_str(), msg.size() + 1);
+    if (!split)
+        return (send->recieve_message("Error processing your message. Please try again\n"));
+    split[msg.size()] = 0;
+
+    target = strtok(split, " ");// /MSG
+	target = strtok(NULL, " ");
+	std::string check;
+	channel *chan;
+	user *u;
+	if (!target)
+		return (send->recieve_message("Error with /MSG command. Expected syntax : \" /MSG <channel or nickname> message \" for example."));
+	else if (target == "*")
+	{
+		if (msg.find('*') + 2  > msg.size())
+			return (send->recieve_message("Error with /MSG * command. Message needed.\n"));
+		return (broadcast_message(msg.substr(msg.find('*') + 2), send));
+	}
+	else if (target == ".")
+	{
+		if (msg.find('.') + 2 > msg.size())
+			return (send->recieve_message("Error with /MSG . command. Message needed.\n"));
+		if (send->getlastrec() == "")
+			return (send->recieve_message("Error with /MSG . command. Nobody to send message to.\n"));
+		return (send->check_rec(msg.substr(msg.find('*') + 2), this->serv));
+	}
+	else if (target == ",")
+	{
+		if (msg.find(',') + 2 > msg.size())
+			return (send->recieve_message("Error with /MSG , command. Message needed.\n"));
+		if (send->getlastsend() == "")
+			return (send->recieve_message("Error with /MSG , command. Nobody to send message to.\n"));
+		return (send->check_send(msg.substr(msg.find('*') + 2), this->serv));
+	}
+	else if (target[0] == '#')
+	{
+		check = target;
+		check.erase(check.begin());
+		if (!(chan = serv->getCorrectChannel(check)))
+			return (send->recieve_message("Error with /MSG # command. Channel not found.\n"));
+		return (chan->broadcast_message(msg.substr(msg.find(check) + 1), send));
+	}
+	else
+	{
+		check = target;
+		if (!(u = serv->getCorrectUser(check)))
+			return (send->recieve_message("Error with /MSG commande. User " + check + " not found.\n"));
+		return (send->send_message(msg.substr(msg.find(check) + 1), *u));
+	}
 }
 
 void channel::change_topic(user *sender, std::string &tp)
@@ -79,7 +129,7 @@ void channel::change_topic(user *sender, std::string &tp)
 			it ++;
 		}
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 	topic_change:
 	this->pv_topic.clear();
 	this->pv_topic = tp;
@@ -104,7 +154,7 @@ void channel::lift_topic_restriction(user *sender)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::enforce_topic_restriction(user *sender)
@@ -124,7 +174,7 @@ void channel::enforce_topic_restriction(user *sender)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::lift_invite_restriction(user *sender)
@@ -144,7 +194,7 @@ void channel::lift_invite_restriction(user *sender)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::enforce_invite_restriction(user *sender)
@@ -164,7 +214,7 @@ void channel::enforce_invite_restriction(user *sender)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::lift_password_restriction(user *sender)
@@ -186,7 +236,7 @@ void channel::lift_password_restriction(user *sender)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::enforce_password_restriction(user *sender, const std::string &pw)
@@ -194,7 +244,7 @@ void channel::enforce_password_restriction(user *sender, const std::string &pw)
 	if (sender->getAdmin())
 	{
 		if (pw.length() == 0)
-			return (sender->recieve_message("channel password can't be empty\n"));
+			return (sender->recieve_message("Channel password can't be empty\n"));
 		this->pv_needs_password = true;
 		this->pv_password = pw;
 		return broadcast_message("This channel (" + this->getName() + ") does now require a password to enter\n");
@@ -212,7 +262,7 @@ void channel::enforce_password_restriction(user *sender, const std::string &pw)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 std::string cpp_ssizet_to_string(ssize_t num)
@@ -241,7 +291,7 @@ void channel::lift_user_limit(user *sender)
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::enforce_user_limit(user *sender, ssize_t limit)
@@ -249,7 +299,7 @@ void channel::enforce_user_limit(user *sender, ssize_t limit)
 	if (sender->getAdmin())
 	{
 		if (limit < 1)
-			return (sender->recieve_message("user limit must be greater than zero\n"));
+			return (sender->recieve_message("User limit must be greater than zero\n"));
 		this->pv_user_limit = limit;
 		return broadcast_message("This channel (" + this->getName() + ") has now a limit of " + cpp_ssizet_to_string(limit) + "users\n");
 	}
@@ -259,19 +309,19 @@ void channel::enforce_user_limit(user *sender, ssize_t limit)
 		if (*it == sender)
 		{
 			if (limit < 1)
-				return (sender->recieve_message("user limit must be greater than zero\n"));
+				return (sender->recieve_message("User limit must be greater than zero\n"));
 			this->pv_user_limit = limit;
 			return broadcast_message("This channel " + this->getName() + " has now a limit of " + cpp_ssizet_to_string(limit) + "users\n");
 		}
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 void channel::promote_to_op(user *sender, std::string reciever)
 {
 	if (!(sender->getAdmin()))
-		return (sender->recieve_message("request denied. insufficent privileges\n"));
+		return (sender->recieve_message("Request denied. insufficent privileges\n"));
 
 	user *test;
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
@@ -289,7 +339,7 @@ void channel::promote_to_op(user *sender, std::string reciever)
 void channel::demote(user *sender, std::string reciever)
 {
 	if (!(sender->getAdmin()))
-		return (sender->recieve_message("request denied. insufficent privileges\n"));
+		return (sender->recieve_message("Request denied. insufficent privileges\n"));
 
 	user *test;
 	std::vector<user *>::iterator it = pv_chann_modos.begin(), last = pv_chann_modos.end();
@@ -320,14 +370,14 @@ void channel::invite_user(user *sender, std::string reciever)
 			goto add_user;
 		it ++;
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 	add_user:
 	std::vector<user *>::iterator ita = pv_whitelist.begin(), lasta = pv_whitelist.end();
 	while (ita != lasta)
 	{
 		test = *ita;
 		if (test->getUserName() == reciever)
-			return (sender->recieve_message("user already has access privileges\n"));
+			return (sender->recieve_message("User already has access privileges\n"));
 		ita ++;
 	}
 	this->pv_whitelist.push_back(test);
@@ -352,9 +402,9 @@ void channel::kick_user(user *sender, std::string reciever) //ajouter une std::s
 		ituser ++;
 	}
 	if (ituser == lastuser)
-		return (sender->recieve_message("target user isn't present in this channel\n"));
+		return (sender->recieve_message("Target user isn't present in this channel\n"));
 	if (testuser->getAdmin())
-		return (sender->recieve_message("target is an administrator and cannot be kicked\n"));
+		return (sender->recieve_message("Target is an administrator and cannot be kicked\n"));
 	std::vector<user *>::iterator itsend = pv_chann_modos.begin(), itrec = pv_chann_modos.begin(), last = pv_chann_modos.end();
 	while (itsend != last)
 	{
@@ -382,12 +432,12 @@ void channel::kick_user(user *sender, std::string reciever) //ajouter une std::s
 	if (itsend != pv_chann_modos.end())
 	{
 		if (itrec != pv_chann_modos.end())
-			return (sender->recieve_message("you can't kick target user, he has same privileges than you\n"));
+			return (sender->recieve_message("You can't kick target user, he has same privileges than you\n"));
 		pv_users_in_chann.erase(ituser);
 		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() /* + " because " + reason*/ + "\n");
 		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() /* + " because " + reason*/));
 	}
-	return (sender->recieve_message("request denied. insufficent privileges\n"));
+	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
 std::string channel::show_users()

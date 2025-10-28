@@ -22,7 +22,8 @@ class server {
     public : 
 
         channel *getCorrectChannel(std::string &);
-        
+        user *getCorrectUser(std::string &name);
+        void all_channs(user *send);
 };
 
 #endif

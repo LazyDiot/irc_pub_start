@@ -1,4 +1,5 @@
 #include "Users.hpp"
+#include "Server.hpp"
 
 user::user(int id)
 {
@@ -14,6 +15,30 @@ user::user(int id)
 user::~user()
 {
     pv_msgqueue.clear();
+}
+
+void user::check_send(std::string s, server *serv)
+{
+    user *u = serv->getCorrectUser(last_sender);
+    if (!u)
+    {
+        this->recieve_message("Can't send message to " + s + " . User no longer is connected.\n");
+        this->last_sender = "";
+    }
+    else
+        this->send_message(s, *u);
+}
+
+void user::check_rec(std::string s, server *serv)
+{
+    user *u = serv->getCorrectUser(last_reciever);
+    if (!u)
+    {
+        this->recieve_message("Can't send message to " + s + " . User no longer is connected.\n");
+        this->last_reciever = "";
+    }
+    else
+        this->send_message(s, *u);
 }
 
 void user::send_message(const std::string &msg, user &dest) 
@@ -66,6 +91,25 @@ std::string user::getUserName() const
 std::string user::getlast_room() const
 {
     return (this->last_room);
+}
+std::string user::getlastrec() const
+{
+    return (this->last_reciever);
+}
+
+std::string user::getlastsend() const
+{
+    return (this->last_sender);
+}
+
+void user::set_reciever(user *rec)
+{
+    last_reciever = rec->getNick();
+}
+
+void user::set_room(channel &chan)
+{
+    last_room = chan.getName();
 }
 
 void user::setNick(const std::string &nick)

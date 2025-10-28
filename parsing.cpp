@@ -7,8 +7,6 @@
 class user;
 class channel;
 
-//if you want to see real talent... then fucking go somewhere else
-
 int is_command(char *s)
 {
     std::string cmd = s;
@@ -157,7 +155,7 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
         return (send->recieve_message("unrecognized MODE command. expected syntax : <+> or <->, directly followed by either <i>, <t>, <k>, <o> or <l> (example : MODE +k <password>) \n"));
 }
 
-void channel::join(std::string &chann, user *send)//password? on prompt le user quand il join ig? pareil, comment check si le chann existe?
+void channel::join(std::string &chann, user *send)//password? on prompt le user quand il join ig? à checker, manque le pass ou non
 {
     channel *chan = serv->getCorrectChannel(chann);
     if (!chan)
@@ -206,7 +204,7 @@ void channel::join(std::string &chann, user *send)//password? on prompt le user 
     }
 }
 
-void channel::leave(std::string &chann, user *send)//comment je check si le user est bien dans le chann en question?
+void channel::leave(std::string &chann, user *send)//changer le last_room
 {
     channel *chan = serv->getCorrectChannel(chann);
     if (!chan)
@@ -243,29 +241,72 @@ void channel::leave(std::string &chann, user *send)//comment je check si le user
     chan->broadcast_message(send->getNick() + " left " + this->getName());
 }
 
-void channel::display(std::string &s, user *send)
+void channel::check_and_send(user *send)
 {
-    // /NAMES
+    std::vector<user *>::iterator it = pv_users_in_chann.begin(), last = pv_users_in_chann.end();
+    while (it != last)
+    {
+        if (*it == send)
+            return (send->recieve_message(show_users()));
+        it ++;
+    }
+}
+
+void channel::display(std::string &s, user *send) // /NAMES
+{
     char test[s.size() + 1];
     strncpy(test, s.c_str(), s.size() + 1);
     if (!test)
         return (send->recieve_message("Error processing your message. Please try again\n"));
     test[s.size()] = 0; //sécurité
     char *precision = strtok(test, " "), *chan_to_check;
-    channel *chdfdf = serv->getCorrectChannel((std::string &) "lobby");
     precision = strtok(NULL, " ");
+    std::string check_chan;
     if (!(precision)) // i.e. juste tapé "/NAMES"
     {
         if (send->getlast_room() == "")
             return (send->recieve_message("No active channel found.\n"));
         return (send->recieve_message(this->show_users()));
     }
-    else if (precision == "-count")
-        return (send->recieve_message(cpp_ssizet_to_string(count_users())));
-    else if (precision == "-ops")
-        return (send->recieve_message(show_mods()));
+    channel *chan;
+    chan_to_check = strtok(NULL, " ");
+    if (!(chan_to_check))
+    {
+        if (precision == "-count")
+            return (send->recieve_message(cpp_ssizet_to_string(count_users())));
+        else if (precision == "-ops")
+            return (send->recieve_message(show_mods()));
+        else if (precision == "**")
+            return (serv->all_channs(send));
+        else
+            return (send->recieve_message("Unrecognized syntax " + (std::string)precision + " .\n"));
+    }
     else
-        return (send->recieve_message("Unrecognized syntax " + (std::string)precision + " .\n"));
+    {
+        while (chan_to_check)
+        {
+            if (chan_to_check[0] != '#')
+                send->recieve_message("Unrecognized channel syntax -> " + (std::string)chan_to_check + " expected : <#channel name> .\n");
+            else
+            {
+                check_chan = chan_to_check;
+                check_chan.erase(check_chan.begin());//vire le '#'
+                chan = serv->getCorrectChannel(check_chan);
+                if (!chan)
+                    send->recieve_message("Unrecognized channel name -> " + check_chan + " please check for typos .\n");
+                else
+                {
+                    if (precision == "-count")
+                        send->recieve_message(cpp_ssizet_to_string(chan->count_users()));
+                    else if (precision == "-ops")
+                        send->recieve_message(chan->show_mods());
+                    // else
+                    //     send->recieve_message(chan->show_users());
+                }
+            }
+            chan_to_check = strtok(NULL, ",");
+        }
+    }
 }
 
 void channel::parse_string(std::string &s, user *send)
