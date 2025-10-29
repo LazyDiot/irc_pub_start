@@ -35,7 +35,7 @@ void channel::kick(std::string &s, user *send)
     if (!split)
         return (send->recieve_message("Error processing your message. Please try again\n"));
     split[s.size()] = 0;//merci les atrocités que le c++ me force à commettre
-    std::string reason, rec;
+    std::string rec;
 
     reciever = strtok(split, " ");
     reciever = strtok(NULL, " ");
@@ -44,8 +44,7 @@ void channel::kick(std::string &s, user *send)
         std::cout << "Error executing command : \"KICK\". Expected syntax : /KICK <username>\n" << std::endl;
         return ;
     }
-    reason = split;
-    this->kick_user(send, rec = reciever /*reason*/);
+    this->kick_user(send, rec = reciever);
 }
 
 void channel::invite(std::string &s, user *send)
@@ -84,6 +83,7 @@ void channel::topic(std::string &s, user *send)
     }
     subject = topic;
     this->change_topic(send, subject);
+    this->broadcast_message("The topic of this channel has been changed by " + send->getNick() + " to " + subject + ".\n");
 }
 
 ssize_t cpp_string_to_ssizet(std::string &s)
@@ -157,7 +157,10 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
 
 void channel::join(std::string &chann, user *send)//password? on prompt le user quand il join ig? à checker, manque le pass ou non
 {
-    channel *chan = serv->getCorrectChannel(chann);
+    if (chann.find("/JOIN") + 1 >= chann.size())
+        return (send->recieve_message("Error with /JOIN command. Please specify what channel you wish to join (one accepted only for each command).\n"));
+    std::string check = chann.substr(chann.find("/JOIN "));
+    channel *chan = serv->getCorrectChannel(check);
     if (!chan)
         return (send->recieve_message("Said channel doesn't exist. Please check for typos\n"));
     std::vector<user *>::iterator it = chan->pv_users_in_chann.begin(), last = chan->pv_users_in_chann.end();
@@ -206,7 +209,10 @@ void channel::join(std::string &chann, user *send)//password? on prompt le user 
 
 void channel::leave(std::string &chann, user *send)//changer le last_room
 {
-    channel *chan = serv->getCorrectChannel(chann);
+    if (chann.find("/LEAVE") + 1 >= chann.size())
+        return (send->recieve_message("Error with /LEAVE command. Please specifiy what channel you want to leave (one accepted only for each command).\n"));
+    std::string check = chann.substr(chann.find("/LEAVE "));
+    channel *chan = serv->getCorrectChannel(check);
     if (!chan)
         return (send->recieve_message("Said channel doesn't exist. Please check for typos\n"));
     std::vector<user *>::iterator it = chan->pv_chann_modos.begin(), last = chan->pv_chann_modos.end();
@@ -225,6 +231,7 @@ void channel::leave(std::string &chann, user *send)//changer le last_room
 		if (*it == send)
         {
             delete *it;
+            send->reset_room();
 			break ;
         }
 		it ++;
@@ -272,11 +279,11 @@ void channel::display(std::string &s, user *send) // /NAMES
     chan_to_check = strtok(NULL, " ");
     if (!(chan_to_check))
     {
-        if (precision == "-count")
+        if (precision == (std::string)"-count")
             return (send->recieve_message(cpp_ssizet_to_string(count_users())));
-        else if (precision == "-ops")
+        else if (precision == (std::string)"-ops")
             return (send->recieve_message(show_mods()));
-        else if (precision == "**")
+        else if (precision == (std::string)"**")
             return (serv->all_channs(send));
         else
             return (send->recieve_message("Unrecognized syntax " + (std::string)precision + " .\n"));
@@ -296,9 +303,9 @@ void channel::display(std::string &s, user *send) // /NAMES
                     send->recieve_message("Unrecognized channel name -> " + check_chan + " please check for typos .\n");
                 else
                 {
-                    if (precision == "-count")
+                    if (precision == (std::string)"-count")
                         send->recieve_message(cpp_ssizet_to_string(chan->count_users()));
-                    else if (precision == "-ops")
+                    else if (precision == (std::string)"-ops")
                         send->recieve_message(chan->show_mods());
                     // else
                     //     send->recieve_message(chan->show_users());

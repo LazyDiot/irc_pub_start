@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string.h>
 
-channel::channel(std::string &name)
+channel::channel(std::string name)
 {
     pv_name = name;
 	pv_password = "";
@@ -75,14 +75,14 @@ void channel::analyse_msg_content(std::string &msg, user *send)//changer le last
 	channel *chan;
 	user *u;
 	if (!target)
-		return (send->recieve_message("Error with /MSG command. Expected syntax : \" /MSG <channel or nickname> message \" for example."));
-	else if (target == "*")
+		return (send->recieve_message("Error with /MSG command. Expected syntax : \" /MSG <#channel or nickname> message \" for example."));
+	else if (target == (std::string)"*")
 	{
 		if (msg.find('*') + 2  > msg.size())
 			return (send->recieve_message("Error with /MSG * command. Message needed.\n"));
 		return (broadcast_message(msg.substr(msg.find('*') + 2), send));
 	}
-	else if (target == ".")
+	else if (target == (std::string)".")
 	{
 		if (msg.find('.') + 2 > msg.size())
 			return (send->recieve_message("Error with /MSG . command. Message needed.\n"));
@@ -90,7 +90,7 @@ void channel::analyse_msg_content(std::string &msg, user *send)//changer le last
 			return (send->recieve_message("Error with /MSG . command. Nobody to send message to.\n"));
 		return (send->check_rec(msg.substr(msg.find('*') + 2), this->serv));
 	}
-	else if (target == ",")
+	else if (target == (std::string)",")
 	{
 		if (msg.find(',') + 2 > msg.size())
 			return (send->recieve_message("Error with /MSG , command. Message needed.\n"));
@@ -104,6 +104,7 @@ void channel::analyse_msg_content(std::string &msg, user *send)//changer le last
 		check.erase(check.begin());
 		if (!(chan = serv->getCorrectChannel(check)))
 			return (send->recieve_message("Error with /MSG # command. Channel not found.\n"));
+		send->set_room(*chan);
 		return (chan->broadcast_message(msg.substr(msg.find(check) + 1), send));
 	}
 	else
@@ -113,6 +114,12 @@ void channel::analyse_msg_content(std::string &msg, user *send)//changer le last
 			return (send->recieve_message("Error with /MSG commande. User " + check + " not found.\n"));
 		return (send->send_message(msg.substr(msg.find(check) + 1), *u));
 	}
+}
+
+void channel::add_creator(user *u)
+{
+	this->pv_chann_modos.push_back(u);
+	this->pv_users_in_chann.push_back(u);
 }
 
 void channel::change_topic(user *sender, std::string &tp)
@@ -381,6 +388,7 @@ void channel::invite_user(user *sender, std::string reciever)
 		ita ++;
 	}
 	this->pv_whitelist.push_back(test);
+	this->broadcast_message((std::string) reciever + " has been invited to this channel by " + sender->getNick() + ".\n");
 	test->recieve_message("You were invited to join \"" + this->getName() + "\" channel.\n");
 }
 
@@ -390,7 +398,7 @@ void channel::invite_user(user *sender, std::string reciever)
 //			si reciever n'est pas dans le chann, error;
 //			si reciever est opérator il faut le remove de la liste;
 //			dans tous les cas il faut le virer des users du chann
-void channel::kick_user(user *sender, std::string reciever) //ajouter une std::string reason
+void channel::kick_user(user *sender, std::string reciever)
 {
 	std::vector<user *>::iterator ituser = pv_users_in_chann.begin(), lastuser = pv_users_in_chann.end();
 	user *testuser, *testrec;
@@ -426,16 +434,16 @@ void channel::kick_user(user *sender, std::string reciever) //ajouter une std::s
 		if (itrec != pv_chann_modos.end())
 			pv_chann_modos.erase(itrec);
 		pv_users_in_chann.erase(ituser);
-		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() /* + " because " + reason*/ + "\n");
-		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() /* + " because " + reason*/ + "\n"));
+		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() + "\n");
+		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() + "\n"));
 	}
 	if (itsend != pv_chann_modos.end())
 	{
 		if (itrec != pv_chann_modos.end())
 			return (sender->recieve_message("You can't kick target user, he has same privileges than you\n"));
 		pv_users_in_chann.erase(ituser);
-		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() /* + " because " + reason*/ + "\n");
-		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() /* + " because " + reason*/));
+		testrec->recieve_message("You have been kick from \"" + this->getName() + "\" channel by " + sender->getNick() + "\n");
+		return (broadcast_message(sender->getNick() + " kicked " + testrec->getNick() ));
 	}
 	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }

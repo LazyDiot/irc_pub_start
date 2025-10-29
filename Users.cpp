@@ -107,6 +107,11 @@ void user::set_reciever(user *rec)
     last_reciever = rec->getNick();
 }
 
+void user::reset_room()
+{
+    last_room = "";
+}
+
 void user::set_room(channel &chan)
 {
     last_room = chan.getName();

@@ -6,6 +6,7 @@
 # include <sstream>
 # include "Channels.hpp"
 # include "Server.hpp"
+# include <sys/types.h>
 
 class channel;
 class server;
@@ -39,6 +40,7 @@ class user{
         void set_sender(user *);
         void set_reciever(user *);
         void set_room(channel &);
+        void reset_room();
         std::string getNick() const;
         std::string getUserName() const;
         std::string getlast_room() const;

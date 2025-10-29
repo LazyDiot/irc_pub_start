@@ -6,6 +6,8 @@
 # include "Server.hpp"
 # include <vector>
 # include <sstream>
+# include <sys/types.h>
+
 
 class user;
 class server;
@@ -23,7 +25,7 @@ class channel{
 		std::vector<user *>	pv_chann_modos;
 		server				*serv;
 	public :
-		channel(std::string &name);
+		channel(std::string name);
 		~channel();
 		
 		void close();
@@ -33,6 +35,8 @@ class channel{
 		void warn_user(std::string &msg, user *sender);
 		void analyse_msg_content(std::string &msg, user *send);
 
+		// void lobby(std::string ,)
+		void add_creator(user *);
 		void change_topic(user *sender, std::string &tp);
 		void lift_topic_restriction(user *sender);
 		void enforce_topic_restriction(user *sender);

@@ -8,6 +8,7 @@
 # include <sstream>
 # include "Users.hpp"
 # include "Channels.hpp"
+# include <sys/types.h>
 
 class user;
 class channel;
@@ -20,10 +21,16 @@ class server {
         std::string             pv_basic_pw; //strings ou char*? vu que ca doit être comparé à du argv?
         std::string             pv_admin_pw;
     public : 
+        bool duplicate_channelname(std::string);
+        bool duplicate_username(std::string);
+        bool duplicate_nickname(std::string);
 
         channel *getCorrectChannel(std::string &);
         user *getCorrectUser(std::string &name);
         void all_channs(user *send);
+
+        void create_channel(user *u, std::string name);
+        void create_lobby();
 };
 
 #endif
