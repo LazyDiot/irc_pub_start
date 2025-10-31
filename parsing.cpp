@@ -32,8 +32,6 @@ void channel::kick(std::string &s, user *send)
 {
     char *change, split[s.size() + 1], *reciever;
     strncpy(split, s.c_str(), s.size() + 1);
-    if (!split)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     split[s.size()] = 0;//merci les atrocités que le c++ me force à commettre
     std::string rec;
 
@@ -51,8 +49,6 @@ void channel::invite(std::string &s, user *send)
 {
     char *change, split[s.size() + 1], *reciever;
     strncpy(split, s.c_str(), s.size() + 1);
-    if (!split)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     split[s.size()] = 0;
 
     reciever = strtok(split, " ");
@@ -69,8 +65,6 @@ void channel::topic(std::string &s, user *send)
 {
     char *topic, split[s.size() + 1];
     strncpy(split, s.c_str(), s.size() + 1);
-    if (!split)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     split[s.size()] = 0;
     std::string subject;
 
@@ -103,8 +97,6 @@ void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
     const char *split1 = s.c_str();
     char *change, split[s.size() + 1], *add_on;
     strncpy(split, s.c_str(), s.size() + 1);
-    if (!split)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     split[s.size()] = 0;
     change = strtok(split, " ");//"MODE"
     change = strtok(NULL, " ");//faut check 11 possibilités donc ca va forcément être dégueu? pas de pointeur sur fn car args differents
@@ -263,8 +255,6 @@ void channel::display(std::string &s, user *send) // /NAMES
 {
     char test[s.size() + 1];
     strncpy(test, s.c_str(), s.size() + 1);
-    if (!test)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     test[s.size()] = 0; //sécurité
     char *precision = strtok(test, " "), *chan_to_check;
     precision = strtok(NULL, " ");
@@ -320,8 +310,6 @@ void channel::parse_string(std::string &s, user *send)
 {
     char test[s.size() + 1];
     strncpy(test, s.c_str(), s.size() + 1);
-    if (!test)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     test[s.size()] = 0; //sécurité
     char *cmd = strtok(test, " ");
     void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode, &channel::join, &channel::leave, &channel::display};

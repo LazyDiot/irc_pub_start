@@ -65,8 +65,6 @@ void channel::analyse_msg_content(std::string &msg, user *send)//changer le last
 {
 	char split[msg.size() + 1], *target;
     strncpy(split, msg.c_str(), msg.size() + 1);
-    if (!split)
-        return (send->recieve_message("Error processing your message. Please try again\n"));
     split[msg.size()] = 0;
 
     target = strtok(split, " ");// /MSG
