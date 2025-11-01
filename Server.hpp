@@ -22,7 +22,8 @@ class server {
         std::vector<channel *>  pv_chann_list;
         std::string             pv_basic_pw; //strings ou char*? vu que ca doit être comparé à du argv?
         std::string             pv_admin_pw;
-    public : 
+    public :
+        server(unsigned int, std::string, std::string);
         bool duplicate_channelname(std::string);
         bool duplicate_username(std::string);
         bool duplicate_nickname(std::string);

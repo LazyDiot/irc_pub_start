@@ -32,7 +32,7 @@ int is_command(char *s)
 
 void channel::kick(std::string &s, user *send)
 {
-    char *change, split[s.size() + 1], *reciever;
+    char split[s.size() + 1], *reciever;
     strncpy(split, s.c_str(), s.size() + 1);
     split[s.size()] = 0;//merci les atrocités que le c++ me force à commettre
     std::string rec;
@@ -49,7 +49,7 @@ void channel::kick(std::string &s, user *send)
 
 void channel::invite(std::string &s, user *send)
 {
-    char *change, split[s.size() + 1], *reciever;
+    char split[s.size() + 1], *reciever;
     strncpy(split, s.c_str(), s.size() + 1);
     split[s.size()] = 0;
 
@@ -96,7 +96,6 @@ ssize_t cpp_string_to_ssizet(std::string &s)
 void channel::mode(std::string &s, user *send) //tres tres TRES sale. sorry
 {
     //MODE ±i; ±t; ±k; ±o; ±l? ou juste la lettre et ca swap on/off?
-    const char *split1 = s.c_str();
     char *change, split[s.size() + 1], *add_on;
     strncpy(split, s.c_str(), s.size() + 1);
     split[s.size()] = 0;

@@ -1,5 +1,12 @@
 #include "Server.hpp"
 
+server::server(unsigned int i, std::string reg_pw, std::string admin_pw)
+{
+    pv_port = i;
+    pv_basic_pw = reg_pw;
+    pv_admin_pw = admin_pw;
+}
+
 void server::create_channel(user *u, std::string name)
 {
     if (!(duplicate_channelname(name)))
