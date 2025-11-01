@@ -63,6 +63,8 @@ void channel::warn_user(std::string &msg, user *sender)
 
 void channel::analyse_msg_content(std::string &msg, user *send)//changer le last_room et les last_users /MSG
 {
+	if (msg[0] != '/')
+		return (this->broadcast_message(msg, send)); //envoie le message en brut dans le chan actuel si ce n'est pas une commande
 	char split[msg.size() + 1], *target;
     strncpy(split, msg.c_str(), msg.size() + 1);
     split[msg.size()] = 0;
@@ -102,6 +104,8 @@ void channel::analyse_msg_content(std::string &msg, user *send)//changer le last
 		check.erase(check.begin());
 		if (!(chan = serv->getCorrectChannel(check)))
 			return (send->recieve_message("Error with /MSG # command. Channel not found.\n"));
+		if (!(chan->is_member(send)))
+			return (send->recieve_message("You cannot send messages in " + check + ", you have not joined it.\n"));
 		send->set_room(*chan);
 		return (chan->broadcast_message(msg.substr(msg.find(check) + 1), send));
 	}
@@ -446,6 +450,18 @@ void channel::kick_user(user *sender, std::string reciever)
 	return (sender->recieve_message("Request denied. insufficent privileges\n"));
 }
 
+bool channel::is_member(user *u)
+{
+	std::vector<user *>::iterator it = pv_users_in_chann.begin(), last = pv_users_in_chann.end();
+	while (it != last)
+	{
+		if (u == *it)
+			return (true);
+		it ++;
+	}
+	return (false);
+}
+
 std::string channel::show_users()
 {
 	std::string users = "The users in this channel (" + this->getName() + ") are : ";
@@ -497,4 +513,9 @@ std::string channel::getPassword() const
 std::string channel::getName() const
 {
 	return (pv_name);
+}
+
+void channel::setServ(server *serv)
+{
+	this->serv = serv;
 }

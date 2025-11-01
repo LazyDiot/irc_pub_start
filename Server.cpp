@@ -7,7 +7,8 @@ void server::create_channel(user *u, std::string name)
         channel chan(name);
         this->pv_chann_list.push_back(&chan);
         chan.add_creator(u);
-        u->recieve_message("You created " + name + " channel. You are granted moderator privileges in it.\n");
+        chan.setServ(this);
+        u->recieve_message("You created \"" + name + "\" channel. You are granted moderator privileges in it.\n");
     }
     else
         u->recieve_message("A channel with this name \"" + name + "\" already exists.\n");
@@ -16,6 +17,7 @@ void server::create_channel(user *u, std::string name)
 void server::create_lobby()
 {
     channel chan((std::string)"lobby");
+    chan.setServ(this);
     pv_chann_list.push_back(&chan);
 }
 

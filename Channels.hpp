@@ -51,6 +51,8 @@ class channel{
 		void demote(user *sender, std::string reciever);
 		void invite_user(user *sender, std::string reciever);
 
+		void check_name(std::string &, user *);
+
 		void kick(std::string &, user *);
 		void invite(std::string &, user *);
 		void topic(std::string &, user *);
@@ -59,6 +61,8 @@ class channel{
 		void leave(std::string &, user *);
 		void display(std::string &, user *);
 		void parse_string(std::string &, user *);
+
+		bool is_member(user *);
 
 		std::string show_mods();
 		std::string show_users();
@@ -70,6 +74,7 @@ class channel{
 		bool getPasswordStatus() const;
 		std::string getPassword() const;
 		std::string getName() const;
+		void setServ(server *);
 };
 
 std::string cpp_ssizet_to_string(ssize_t num);

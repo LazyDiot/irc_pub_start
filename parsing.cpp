@@ -24,8 +24,10 @@ int is_command(char *s)
         return (6);
     else if (cmd == "/NAMES")
         return (7);
+    else if (cmd == "/CREATE")
+        return (8);
     else
-        return (0); //assumes "/MSG ET tout autre input garbage"
+        return (0); //assumes "/MSG" ET tout autre input garbage
 }
 
 void channel::kick(std::string &s, user *send)
@@ -151,48 +153,47 @@ void channel::join(std::string &chann, user *send)//password? on prompt le user 
 {
     if (chann.find("/JOIN") + 1 >= chann.size())
         return (send->recieve_message("Error with /JOIN command. Please specify what channel you wish to join (one accepted only for each command).\n"));
-    std::string check = chann.substr(chann.find("/JOIN "));
-    channel *chan = serv->getCorrectChannel(check);
+    std::string check = chann.substr(chann.find("/JOIN ")), cchan;
+
+    char split[check.size() + 1], *subchan;
+    strncpy(split, check.c_str(), check.size() + 1);
+    subchan = strtok(split, " ");//pas besoin de check NULL vu que la premiere ligne de la fonction check la taille
+    channel *chan = serv->getCorrectChannel(cchan = subchan);
     if (!chan)
         return (send->recieve_message("Said channel doesn't exist. Please check for typos\n"));
     std::vector<user *>::iterator it = chan->pv_users_in_chann.begin(), last = chan->pv_users_in_chann.end();
     while (it != last)
 	{
 		if (*it == send) //si déjà dans le chann
-			return (send->recieve_message("You already joined channel " + chann + "\n"));
+			return (send->recieve_message("You already joined channel " + cchan + "\n"));
 		it ++;
 	}
     if ((!chan->getInviteStatus() && !chan->getPasswordStatus()) || send->getAdmin()) //si admin ou free-access chann
     {
-        chan->broadcast_message(send->getNick() + " joined channel " + chan->getName() + "\n");
+        chan->broadcast_message(send->getNick() + " joined channel " + cchan + "\n");
         chan->pv_users_in_chann.push_back(send);
-        return (send->recieve_message("You have joined " + chan->getName() + "\n"));
+        return (send->recieve_message("You have joined " + cchan + "\n"));
     }
-    else if (chan->getInviteStatus() && !chan->getPasswordStatus()) //si invite only SANS password, potentiellement supprimer la condition password sinon merge les deux
+    else //soit invite only, soit pw, soit les deux; une seule condition necessaire pour entrer
     {
         it = chan->pv_whitelist.begin(), last = chan->pv_whitelist.end();
         while (it != last)
         {
             if (*it == send)
             {
-                chan->broadcast_message(send->getNick() + " joined channel " + chan->getName() + "\n");
+                chan->broadcast_message(send->getNick() + " joined channel " + cchan + "\n");
                 chan->pv_users_in_chann.push_back(send);
-                return (send->recieve_message("You have joined " + chan->getName() + "\n"));
+                return (send->recieve_message("You have joined " + cchan + "\n"));
             }
             it ++;
         }
-        return (send->recieve_message("This channel ( " + chan->getName() + " ) is in invite-only mode. You needed to be invited my a moderator or an admin.\n"));
-    }
-    // else if (chan->getInviteStatus() && chan->getPasswordStatus()) // si invite only ET password (stupide nan? si c'est invite-only pas besoin du password?)
-    else if (chan->getPasswordStatus())
-    {
-        send->recieve_message("This channel ( " + chan->getName() + " ) requires a password. Please enter it\n");
-        std::string input;
-        std::getline(std::cin, input);
-        if (input == chan->getPassword())
+        subchan = strtok(NULL, " ");
+        if (!subchan)
+            return (send->recieve_message("You didn't join " + cchan + ". It requires a non-empty password to join.\n"));
+        if (subchan == chan->getPassword())
         {
-            chan->broadcast_message(send->getNick() + " joined channel " + chan->getName() + "\n");
             chan->pv_users_in_chann.push_back(send);
+            chan->broadcast_message(send->getNick() + " joined channel " + chan->getName() + "\n");
             return (send->recieve_message("You have joined " + chan->getName() + "\n"));
         }
         return (send->recieve_message("Wrong password. you didn't join " + chan->getName() + "\n"));
@@ -306,12 +307,18 @@ void channel::display(std::string &s, user *send) // /NAMES
     }
 }
 
+void channel::check_name(std::string &s, user *send)
+{
+    std::string name = s.substr(s.find("/CREATE") + 1);
+    serv->create_channel(send, name);
+}
+
 void channel::parse_string(std::string &s, user *send)
 {
     char test[s.size() + 1];
     strncpy(test, s.c_str(), s.size() + 1);
     test[s.size()] = 0; //sécurité
     char *cmd = strtok(test, " ");
-    void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode, &channel::join, &channel::leave, &channel::display};
+    void (channel::*execute_command[])(std::string &, user *) = {&channel::analyse_msg_content, &channel::kick, &channel::invite, &channel::topic, &channel::mode, &channel::join, &channel::leave, &channel::display, &channel::check_name};
     (this->*execute_command[is_command(cmd)])(s, send);
 }

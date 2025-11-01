@@ -2,6 +2,8 @@
 # define SERVER_HPP
 
 # define MAX_USERS_IN_CHAT 150
+# define MSG_SIZE_MAX 255
+# define NAME_SIZE_MAX 25
 
 # include <iostream>
 # include <vector>
